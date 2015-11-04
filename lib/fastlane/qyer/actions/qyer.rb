@@ -1,0 +1,145 @@
+module Fastlane
+  module Actions
+    class QyerAction < Action
+
+      ARGS_MAP = {
+        api_key: '--key',
+        ipa: '--file',
+        slug: '--slug',
+        changelog: '--changelog',
+        branch: '--branch',
+        channel: '--channel',
+        commit: '--commit',
+        ci_url: '--ci-url'
+      }
+
+      def self.run(params)
+        determine_qma!
+
+        build_args = []
+        build_args = params_to_build_args(params)
+        build_args = build_args.join(' ')
+
+        core_command = "qma publish #{build_args}"
+        command = "set -o pipefail && #{core_command}"
+
+        begin
+          Actions.sh command
+        rescue => ex
+          raise "A build error occured, this is usually related to code signing. Take a look at the error above".red
+        end
+      end
+
+      def self.determine_qma!
+        if Gem::Specification.select{|g| g.name == 'qyer-mobile-app'}.length == 0
+          raise "Missing require gem: [sudo] gem install qyer-mobile-app".red
+        end
+      end
+
+      def self.params_to_build_args(config)
+        params = config.values
+
+        params = params.delete_if { |k, v| v.nil? }
+        params = fill_in_default_values(params)
+
+        params.collect do |k, v|
+          value = (v.to_s.length > 0 ? "\"#{v}\"" : '""')
+          "#{ARGS_MAP[k]} #{value}".strip
+        end.compact
+      end
+
+      def self.fill_in_default_values(params)
+        ipa = ENV["QYER_IPA"]
+        params[:ipa] ||= ipa if ipa
+
+        api_key = ENV["QYER_API_KEY"]
+        params[:api_key] ||= api_key if api_key
+
+        app_name = ENV["QYER_APP_NAME"]
+        params[:app_name] ||= app_name if app_name
+
+        slug = ENV["QYER_SLUG"]
+        params[:slug] ||= slug if slug
+
+        channel = ENV["QYER_CHANNEl"]
+        params[:channel] ||= channel if channel
+
+        changelog = ENV["JENKINS_CHANGLOG"] || ENV["QYER_CHANGELOG"]
+        params[:changelog] ||= changelog if changelog
+
+        branch = ENV["QYER_CVS_BRANCH"]
+        params[:branch] ||= branch if branch
+
+        commit = ENV["JENKINS_CVS_COMMIT"] || ENV["QYER_CVS_COMMIT"]
+        params[:commit] ||= commit if commit
+
+        ci_url = ENV["JENKINS_CI_URL"] || ENV["QYER_CI_URL"]
+        params[:ci_url] ||= ci_url if ci_url
+
+        params
+      end
+
+      def self.available_options
+        [
+          FastlaneCore::ConfigItem.new(key: :api_key,
+                                       env_name: 'QYER_API_KEY',
+                                       description: 'API Key for Qyer Mobile AdHoc Access',
+                                       verify_block: proc do |value|
+                                         fail "No API Key for Qyer Mobile AdHoc given, pass using `api_key: 'token'`".red unless value && !value.empty?
+                                       end),
+          FastlaneCore::ConfigItem.new(key: :ipa,
+                                       env_name: 'QYER_IPA',
+                                       description: 'Path to your IPA file. Optional if you use the `gym`, `ipa` or `xcodebuild` action. ',
+                                       default_value: Actions.lane_context[SharedValues::IPA_OUTPUT_PATH],
+                                       verify_block: proc do |value|
+                                         fail "Couldn't find ipa file at path '#{value}'".red unless File.exist?(value)
+                                       end),
+          FastlaneCore::ConfigItem.new(key: :app_name,
+                                       env_name: 'QYER_APP_NAME',
+                                       description: 'App Name',
+                                       optional: true),
+          FastlaneCore::ConfigItem.new(key: :slug,
+                                       env_name: 'QYER_SLUG',
+                                       description: 'URL Slug',
+                                       optional: true),
+          FastlaneCore::ConfigItem.new(key: :changelog,
+                                       env_name: 'QYER_CHANGELOG',
+                                       description: 'Changelog',
+                                       optional: true),
+          FastlaneCore::ConfigItem.new(key: :channel,
+                                       env_name: 'QYER_CHANNEL',
+                                       description: 'upload channel name',
+                                       optional: true),
+          FastlaneCore::ConfigItem.new(key: :branch,
+                                       env_name: 'QYER_GIT_BRANCH',
+                                       description: 'git branch name',
+                                       optional: true),
+          FastlaneCore::ConfigItem.new(key: :commit,
+                                       env_name: 'QYER_GIT_COMMIT',
+                                       description: 'git last commit',
+                                       optional: true),
+          FastlaneCore::ConfigItem.new(key: :ci_url,
+                                       env_name: 'QYER_CI_URL',
+                                       description: 'ci url',
+                                       optional: true),
+        ]
+      end
+
+      def self.description
+        'Upload a new build to Qyer Mobile System'
+      end
+
+      def self.details
+        "More information on the qyer-mobile-app project page: https://github.com/icyleaf/qyer-mobile-app"
+      end
+
+      def self.author
+        'icyleaf'
+      end
+
+      def self.is_supported?(platform)
+        [:ios].include? platform
+      end
+    end
+  end
+end
