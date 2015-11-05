@@ -14,7 +14,7 @@ module Fastlane
       }
 
       def self.run(params)
-        determine_qma!
+        Actions.verify_gem!('cocoapods')
 
         build_args = []
         build_args = params_to_build_args(params)
@@ -29,13 +29,7 @@ module Fastlane
           raise "A build error occured, this is usually related to code signing. Take a look at the error above".red
         end
       end
-
-      def self.determine_qma!
-        if Gem::Specification.select{|g| g.name == 'qyer-mobile-app'}.length == 0
-          raise "Missing require gem: [sudo] gem install qyer-mobile-app".red
-        end
-      end
-
+      
       def self.params_to_build_args(config)
         params = config.values
 
