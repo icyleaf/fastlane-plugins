@@ -15,6 +15,12 @@ module Fastlane
     class JenkinsAction < Action
 
       def self.run(params)
+        raise "is not ci" if Helper.is_ci?
+        if params[:force_build] && ENV['GIT_COMMIT'] == ENV['GIT_PREVIOUS_SUCCESSFUL_COMMIT']
+          Helper.log.warn "Current env is not Jenkin CI.".yellow
+          raise "Current env is not Jenkin CI."
+        end
+
         fetch_changelog!
         fetch_jenkins_env!
       end
@@ -70,6 +76,16 @@ module Fastlane
 
         Actions.lane_context[SharedValues::JENKINS_CI_URL] = ENV['BUILD_URL']
         ENV[SharedValues::JENKINS_CI_URL.to_s] = ENV['BUILD_URL']
+      end
+
+      def self.available_options
+        [
+          FastlaneCore::ConfigItem.new(key: :force_build,
+                                       env_name: 'JENKINS_FORCE_BUILD',
+                                       description: 'Force build if the commit same as previous success commit',
+                                       default_value: true,
+                                       optional: true)
+        ]
       end
 
       def self.output
