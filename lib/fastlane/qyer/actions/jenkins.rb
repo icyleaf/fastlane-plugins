@@ -15,10 +15,12 @@ module Fastlane
     class JenkinsAction < Action
 
       def self.run(params)
-        raise "is not ci" if Helper.is_ci?
-        if params[:force_build] && ENV['GIT_COMMIT'] == ENV['GIT_PREVIOUS_SUCCESSFUL_COMMIT']
-          Helper.log.warn "Current env is not Jenkin CI.".yellow
-          raise "Current env is not Jenkin CI."
+        raise "Current environment is not ci" unless Helper.is_ci?
+
+        if params[:force_build] == false && ENV['GIT_COMMIT'] == ENV['GIT_PREVIOUS_SUCCESSFUL_COMMIT']
+          message = "Previous build was the latest commit. Skip this build"
+          Helper.log.warn message.yellow
+          raise message
         end
 
         fetch_changelog!
@@ -32,8 +34,7 @@ module Fastlane
 
         bid = ENV['BUILD_NUMBER'].to_i
         begin
-          url = "#{ENV['JOB_URL']}/#{bid.to_s}/api/json"
-          res = Net::HTTP.get_response(URI(url))
+          res = Net::HTTP.get_response(URI.parse("#{ENV['JOB_URL']}/#{bid.to_s}/api/json"))
           if res.is_a?(Net::HTTPSuccess)
             json = JSON.parse(res.body)
             if json['result'] == 'SUCCESS'
@@ -50,7 +51,7 @@ module Fastlane
           bid -= 1
         end until fetch_correct_changelog || bid <= 0
 
-        if changes.size == 0
+        if changes.size == 0 && Helper.is_test?
           last_success_commit = ENV['GIT_PREVIOUS_SUCCESSFUL_COMMIT']
           git_logs = `git log --pretty="format:%s - %cn [%ci]" #{last_success_commit}..HEAD`.strip.gsub(" +0800", "")
           changes = git_logs.split("\n")
