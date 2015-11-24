@@ -3,6 +3,7 @@
 ## v0.4.0
 
 - 配合 Fastlane 的 gradle action，支持 qyer action 的 android apk 的上传
+- 更新 fastlane 最低依赖 v1.34.0 以上版本
 
 ## v0.3.0
 
