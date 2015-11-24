@@ -5,6 +5,7 @@ module Fastlane
       ARGS_MAP = {
         api_key: '--key',
         ipa: '--file',
+        apk: '--file',
         slug: '--slug',
         changelog: '--changelog',
         branch: '--branch',
@@ -14,11 +15,10 @@ module Fastlane
       }
 
       def self.run(params)
-        Actions.verify_gem!('cocoapods')
-
         build_args = []
         build_args = params_to_build_args(params)
         build_args = build_args.join(' ')
+
 
         core_command = "qma publish #{build_args}"
         command = "set -o pipefail && #{core_command}"
@@ -29,7 +29,7 @@ module Fastlane
           raise "A build error occured, this is usually related to code signing. Take a look at the error above".red
         end
       end
-      
+
       def self.params_to_build_args(config)
         params = config.values
 
@@ -43,8 +43,16 @@ module Fastlane
       end
 
       def self.fill_in_default_values(params)
-        ipa = ENV["QYER_IPA"]
-        params[:ipa] ||= ipa if ipa
+        case Actions.lane_context[:PLATFORM_NAME]
+        when :ios
+          ipa = ENV["QYER_IPA"]
+          params[:ipa] ||= ipa if ipa
+        when :android
+          apk = ENV["QYER_APK"]
+          params[:apk] ||= apk if apk
+        else
+          raise "You have to either pass an ipa or an apk file to the Crashlytics action".red
+        end
 
         api_key = ENV["QYER_API_KEY"]
         params[:api_key] ||= api_key if api_key
@@ -81,13 +89,25 @@ module Fastlane
                                        verify_block: proc do |value|
                                          fail "No API Key for Qyer Mobile AdHoc given, pass using `api_key: 'token'`".red unless value && !value.empty?
                                        end),
+          # iOS Specific
           FastlaneCore::ConfigItem.new(key: :ipa,
                                        env_name: 'QYER_IPA',
                                        description: 'Path to your IPA file. Optional if you use the `gym`, `ipa` or `xcodebuild` action. ',
-                                       default_value: Actions.lane_context[SharedValues::IPA_OUTPUT_PATH],
+                                       default_value: Actions.lane_context[SharedValues::IPA_OUTPUT_PATH] || Dir["*.ipa"].last,
+                                       optional: true,
                                        verify_block: proc do |value|
                                          fail "Couldn't find ipa file at path '#{value}'".red unless File.exist?(value)
                                        end),
+          # Android Specific
+          FastlaneCore::ConfigItem.new(key: :apk,
+                                       env_name: "QYER_APK",
+                                       description: "Path to your APK file",
+                                       default_value: Actions.lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH] || Dir["*.apk"].last || Dir[File.join("app", "build", "outputs", "apk", "app-qyer-release.apk")].last,
+                                       optional: true,
+                                       verify_block: proc do |value|
+                                         raise "Couldn't find apk file at path '#{value}'".red unless File.exist?(value)
+                                       end),
+
           FastlaneCore::ConfigItem.new(key: :app_name,
                                        env_name: 'QYER_APP_NAME',
                                        description: 'App Name',
@@ -132,7 +152,7 @@ module Fastlane
       end
 
       def self.is_supported?(platform)
-        [:ios].include? platform
+        [:ios, :android].include? platform
       end
     end
   end

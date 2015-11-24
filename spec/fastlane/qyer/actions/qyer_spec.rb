@@ -18,8 +18,13 @@ describe Fastlane::Actions::QyerAction do
     expect(subject.description).not_to be_empty
   end
 
-  it 'supports platform only is ios' do
-    expect(subject.is_supported?(:ios)).to be true
+  %w[ios android].each do |name|
+    it "supports #{name} platform" do
+      expect(subject.is_supported?(name.to_sym)).to be true
+    end
+  end
+
+  it 'not supports mac platform' do
     expect(subject.is_supported?(:mac)).to be false
   end
 end
