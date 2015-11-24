@@ -1,5 +1,9 @@
 # 更新日志
 
+## v0.4.0
+
+- 配合 Fastlane 的 gradle action，支持 qyer action 的 android apk 的上传
+
 ## v0.3.0
 
 - 针对 `jenkins` action 增加参数可配置是否强制构建（如果本次构建和上次一致可停止构建）
