@@ -19,7 +19,6 @@ module Fastlane
         build_args = params_to_build_args(params)
         build_args = build_args.join(' ')
 
-
         core_command = "qma publish #{build_args}"
         command = "set -o pipefail && #{core_command}"
 

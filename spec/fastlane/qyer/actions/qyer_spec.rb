@@ -1,10 +1,5 @@
-require 'spec_helper'
-
 describe Fastlane::Actions::QyerAction do
   subject { Fastlane::Actions::QyerAction }
-  it 'has a version number' do
-    expect(Fastlane::Qyer::VERSION).not_to be nil
-  end
 
   it 'has a author name' do
     expect(subject.author).to eq("icyleaf")
