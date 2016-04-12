@@ -23,7 +23,20 @@ require 'fastlane-qyer'
 
 ## Actions
 
+### xcode_bootstrap
 
+每当新启动一个项目，在支持 fastlane 都需要花费时间和规范来配置参数，有了它可以轻松帮你一键配置如下的设置：
+
+- 支持 Cocoapods
+- 添加 **AdHoc** Build Confiuration 用于 fastlane 打包（自动处理 `Podfile` 文件)
+- 根据 Build Confiuration 区别安装应用的名称
+  - Debug: {应用名}开发版（默认配置，可自定义）
+  - AdHoc: {应用名}内测版（默认配置，可自定义）
+  - Release: {应用名}
+- 根据 Build Confiuration 区别安装应用的 identifier
+  - Debug: {应用identifier}.debug (默认配置，可自定义）
+  - AdHoc: {应用identifier}
+  - Release: {应用identifier}
 
 ### qyer
 
