@@ -14,16 +14,23 @@ module Fastlane
 
       def self.run(params)
         @project_path = params[:project_path]
-        @project_name = @project_path.split('/')[-1]
-        @use_cocoapods = params[:cocoapods]
 
-        @build_configuration_name = params[:build_configuration_name] || 'AdHoc'.freeze
-        @build_configuration_base = params[:build_configuration_base] || :release
-
-        UI.user_error!("Please pass the path to the project (.xcodeproj)") unless @project_path.end_with?(".xcodeproj")
+        UI.user_error!("Please pass the path to the project (.xcodeproj)") unless @project_path.to_s.end_with?(".xcodeproj")
         UI.user_error!("Could not find Xcode project") unless File.exist?(@project_path)
 
+        @project_name = @project_path.split('/')[-1]
+        @use_cocoapods = params[:cocoapods]
+        @app_suffix = params[:app_suffix]
+        @app_identifier = ENV['PRODUCE_APP_IDENTIFIER']
+
+        app_suffix_valid!
+
+        @build_configuration_name = params[:build_configuration_name]
+        @build_configuration_base = params[:build_configuration_base]
+
         @project = Xcodeproj::Project.open(@project_path)
+        UI.user_error!("Not found any target in project") if @project.targets.size == 0
+
         @target_name = @project.targets[0].name
 
         if @use_cocoapods
@@ -41,6 +48,12 @@ module Fastlane
       end
 
       def self.xcode_bootstrap!
+        unless @project.build_configuration_list[@build_configuration_name]
+          add_build_configuration(@build_configuration_name, @build_configuration_base)
+          @project.save
+        else
+          UI.user_error!("Build configuration `#{@build_configuration_name}` is exists, check again.")
+        end
       end
 
       def self.podfile_bootstrap!
@@ -70,21 +83,59 @@ module Fastlane
         File.exist?(File.join(@project_path, 'Podfile'))
       end
 
+      def self.add_build_configuration(name, base)
+        @project.add_build_configuration(name, base)
+
+        project_target = @project.targets[0]
+        code_sign = (base == :release) ? 'iPhone Distribution' : 'iPhone Developer'
+
+        target_configuration = project_target.add_build_configuration(name, base)
+        target_configuration.base_configuration_reference = pod_build_configuration(@build_configuration_name)
+        target_configuration.build_settings['SDKROOT'] = 'iphoneos'
+        target_configuration.build_settings['PRODUCT_BUNDLE_IDENTIFIER'] = @app_identifier
+        target_configuration.build_settings['INFOPLIST_FILE'] = info_plist_path
+        target_configuration.build_settings['CODE_SIGN_IDENTITY[sdk=iphoneos*]'] = code_sign
+        target_configuration.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = ["#{name.upcase}=1"]
+
+        target_configuration
+      end
+
+      def self.pod_build_configuration(name)
+        @project.objects.select { |obj| obj.isa == 'PBXFileReference' &&
+          !obj.name.nil? &&
+          obj.name.include?(".#{name.downcase}.xcconfig")
+        }[0]
+      end
+
+      def self.info_plist_path
+        @project.objects.select { |obj| obj.isa == 'XCBuildConfiguration' &&
+          !obj.build_settings['PRODUCT_BUNDLE_IDENTIFIER'].nil?
+        }[0].build_settings['INFOPLIST_FILE']
+      end
+
+      def self.app_suffix_valid!
+        UI.user_error!('Invaild app suffix format. please check `fastlane action xcode_bootstrap`') unless @app_suffix.class == Hash
+        @app_suffix.each do |name, dict|
+          UI.user_error!() unless dict.class == Hash
+          UI.user_error!() unless dict.keys == [:name, :identifier]
+          dict.each do |key, value|
+            UI.user_error!() unless value.class == String
+          end
+        end
+      end
+
       def self.available_options
         [
           FastlaneCore::ConfigItem.new(key: :project_path,
                                        env_name: 'XCODE_PROJECT_PATH',
                                        description: 'Project (.xcodeproj) file to use to build app',
-                                       default_value: Dir['*.xcodeproj'].size > 0 ? Dir['*.xcodeproj'].first : ''),
+                                       default_value: Dir['*.xcodeproj'].first,
+                                       optional: true),
           FastlaneCore::ConfigItem.new(key: :cocoapods,
                                        env_name: 'XCODE_COCOAPODS_SUPPORT',
                                        description: 'Project need cocoapods support(default is `false`)',
                                        is_string: false,
                                        default_value: false),
-          # FastlaneCore::ConfigItem.new(key: :app_identifier,
-          #                              env_name: 'XCODE_APP_IDENTIFIER',
-          #                              description: 'The bundle identifier of your app',
-          #                              default_value: ENV['PRODUCE_APP_IDENTIFIER']),
           FastlaneCore::ConfigItem.new(key: :build_configuration_name,
                                        env_name: 'XCODE_BUILD_CONFIGURATION_NAME',
                                        description: 'The build configuration name of your app',
@@ -92,10 +143,12 @@ module Fastlane
           FastlaneCore::ConfigItem.new(key: :build_configuration_base,
                                        env_name: 'XCODE_BUILD_CONFIGURATION_BASE',
                                        description: 'The build configuration base name of your app',
-                                       default_value: 'release'),
+                                       is_string: false,
+                                       default_value: :release),
           FastlaneCore::ConfigItem.new(key: :app_suffix,
                                        env_name: 'XCODE_APP_SUFFIX',
                                        description: 'The user defined app name&identifier suffix of your app',
+                                       is_string: false,
                                        default_value: {
                                          'Debug': {
                                            name: '开发版',
