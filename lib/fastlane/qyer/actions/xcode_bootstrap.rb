@@ -150,15 +150,15 @@ module Fastlane
                                        description: 'The user defined app name&identifier suffix of your app',
                                        is_string: false,
                                        default_value: {
-                                         'Debug': {
+                                         'Debug' => {
                                            name: '开发版',
                                            identifier: '.debug'
                                           },
-                                          'AdHoc': {
+                                          'AdHoc' => {
                                             name: '内测版',
                                             identifier: ''
                                           },
-                                          'Release': {
+                                          'Release' => {
                                             name: '',
                                             identifier: ''
                                           },

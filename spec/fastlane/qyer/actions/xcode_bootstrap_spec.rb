@@ -35,15 +35,15 @@ describe Fastlane::Actions::XcodeBootstrapAction do
     let (:proj_file) { "bundle.xcodeproj" }
     let (:pod_file) { "Podfile" }
     let (:app_suffix) { {
-      'Debug': {
+      'Debug' => {
         name: 'dev',
         identifier: '.debug'
         },
-      'Beta': {
+      'Beta' => {
         name: 'Beta',
         identifier: '.adhoc'
         },
-      'RC': {
+      'RC' => {
         name: 'RC',
         identifier: ''
         },
