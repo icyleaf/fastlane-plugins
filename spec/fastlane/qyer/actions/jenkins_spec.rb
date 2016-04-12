@@ -26,7 +26,7 @@ describe Fastlane::Actions::JenkinsAction do
 
   describe "Jenkins Integration" do
 
-    it "not works with non-ci" do
+    it "should throw an exception with non-jenkins ci env" do
       expect do
         Fastlane::FastFile.new.parse("lane :test do
           jenkins
@@ -34,7 +34,7 @@ describe Fastlane::Actions::JenkinsAction do
       end.to raise_error RuntimeError
     end
 
-    it "works with ci" do
+    it "works only with jenkins ci" do
       require 'json'
       require 'date'
 

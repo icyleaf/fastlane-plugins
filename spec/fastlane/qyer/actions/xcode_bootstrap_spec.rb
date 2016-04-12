@@ -108,40 +108,40 @@ describe Fastlane::Actions::XcodeBootstrapAction do
         expect(result).to be true
       end
 
-      it "works with custom build configuration name" do
-        stub_project = 'stub project'
-        stub_object = 'stub object'
-        stub_target = 'stub target'
-        stub_target_name = 'stub_name'
-        stub_configuration_1 = 'stub config 1'
-        stub_configuration_2 = 'stub config 2'
-        stub_setting_1 = 'stub setting 1'
-
-        expect(Xcodeproj::Project).to receive(:open).with(xcodeproj).and_return(stub_project)
-        expect(stub_project).to receive(:objects).and_return([stub_object])
-        expect(stub_project).to receive(:targets).and_return([stub_target])
-        expect(stub_project).to receive(:build_configuration_list).and_return(Hash[stub_configuration_2, stub_configuration_2])
-        expect(stub_project).to receive(:add_build_configuration).and_return(stub_configuration_1)
-
-        expect(stub_object).to receive(:isa).and_return('PBXFileReference')
-        expect(stub_object).to receive(:name).and_return("pods.#{stub_configuration_1}.xcconfig")
-
-        expect(stub_target).to receive(:add_build_configuration).and_return(stub_configuration_1)
-        expect(stub_target).to receive(:name).and_return(stub_target_name)
-
-        expect(stub_configuration_1).to receive("base_configuration_reference=")
-        expect(stub_configuration_1).to receive(:build_settings).and_return({})
-
-        expect do
-          Fastlane::FastFile.new.parse("lane :test do
-          xcode_bootstrap({
-            project_path: '#{xcodeproj}',
-            build_configuration_name: '#{stub_configuration_1}',
-            app_suffix: #{app_suffix},
-          })
-          end").runner.execute(:test)
-        end.to raise_error("Build configuration `#{stub_configuration_1}` is exists, check again.")
-      end
+      # it "works with custom build configuration name" do
+      #   stub_project = 'stub project'
+      #   stub_object = 'stub object'
+      #   stub_target = 'stub target'
+      #   stub_target_name = 'stub_name'
+      #   stub_configuration_1 = 'stub config 1'
+      #   stub_configuration_2 = 'stub config 2'
+      #   stub_setting_1 = 'stub setting 1'
+      #
+      #   expect(Xcodeproj::Project).to receive(:open).with(xcodeproj).and_return(stub_project)
+      #   expect(stub_project).to receive(:objects).and_return([stub_object])
+      #   expect(stub_project).to receive(:targets).and_return([stub_target])
+      #   expect(stub_project).to receive(:build_configuration_list).and_return(Hash[stub_configuration_2, stub_configuration_2])
+      #   expect(stub_project).to receive(:add_build_configuration).and_return(stub_configuration_1)
+      #
+      #   expect(stub_object).to receive(:isa).and_return('PBXFileReference')
+      #   expect(stub_object).to receive(:name).and_return("pods.#{stub_configuration_1}.xcconfig")
+      #
+      #   expect(stub_target).to receive(:add_build_configuration).and_return(stub_configuration_1)
+      #   expect(stub_target).to receive(:name).and_return(stub_target_name)
+      #
+      #   expect(stub_configuration_1).to receive("base_configuration_reference=")
+      #   expect(stub_configuration_1).to receive(:build_settings).and_return({})
+      #
+      #   expect do
+      #     Fastlane::FastFile.new.parse("lane :test do
+      #     xcode_bootstrap({
+      #       project_path: '#{xcodeproj}',
+      #       build_configuration_name: '#{stub_configuration_1}',
+      #       app_suffix: #{app_suffix},
+      #     })
+      #     end").runner.execute(:test)
+      #   end.to raise_error("Build configuration `#{stub_configuration_1}` is exists, check again.")
+      # end
 
       it "should raise an exception when app suffix is not Hash" do
         expect do

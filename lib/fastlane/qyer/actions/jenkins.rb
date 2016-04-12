@@ -15,7 +15,7 @@ module Fastlane
     class JenkinsAction < Action
 
       def self.run(params)
-        raise "Current environment is not ci" unless Helper.is_ci?
+        raise "Current environment is not ci" unless is_jenkins?
 
         if params[:force_build] == false && ENV['GIT_COMMIT'] == ENV['GIT_PREVIOUS_SUCCESSFUL_COMMIT']
           message = "Previous build was the latest commit. Skip this build"
@@ -77,6 +77,10 @@ module Fastlane
 
         Actions.lane_context[SharedValues::JENKINS_CI_URL] = ENV['BUILD_URL']
         ENV[SharedValues::JENKINS_CI_URL.to_s] = ENV['BUILD_URL']
+      end
+
+      def self.is_jenkins?
+        ENV.key?('JENKINS_URL')
       end
 
       def self.available_options
