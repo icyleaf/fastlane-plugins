@@ -156,7 +156,7 @@ module Fastlane
                                           },
                                           'AdHoc': {
                                             name: '内测版',
-                                            identifier: '.adhoc'
+                                            identifier: ''
                                           },
                                           'Release': {
                                             name: '',

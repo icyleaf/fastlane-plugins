@@ -38,6 +38,57 @@ require 'fastlane-qyer'
   - AdHoc: {应用identifier}
   - Release: {应用identifier}
 
+
+#### 参数
+
+名称 | 环境变量 | 说明 | 默认值 |
+---|---|---|---
+project_path | `XCODE_PROJECT_PATH` | 项目路径 | 默认根目录
+cocoapods | `XCODE_COCOAPODS_SUPPORT` | 是否处理 Podfile | 默认 `true`
+build_configuration_name | `XCODE_BUILD_CONFIGURATION_NAME` | 新加编译配置名 | 默认 `AdHoc`
+build_configuration_base | `XCODE_BUILD_CONFIGURATION_BASE` | 新加编译配置的继承  | 默认 `:release`
+app_suffix | `XCODE_APP_SUFFIX` | 自定义应用名和唯一标识 | 默认参考上面说明
+
+#### 使用方法
+
+在 `Fastfile` 添加你定义好的 lane:
+
+```ruby
+# 默认配置（参考上面说明配置）
+lane :bootstrap do
+  xcode_bootstrap
+end
+
+# 自定义 Build Confiugration
+lane :bootstrap do
+  xcode_bootstrap({
+    build_configuration_name: 'Beta',
+    build_configuration_base: :release,
+    app_suffix: {
+      'Debug': {
+        name: '开发版',
+        identifier: '.debug'
+      },
+      'Beta': {
+        name: '测试版',
+        identifier: '.beta'
+      },
+      'Release': {
+        name: '',
+        identifier: ''
+      },
+    }
+  })
+end
+```
+
+打开你的终端执行:
+
+```bash
+$ fastlane ios bootstrap
+```
+
+
 ### qyer
 
 封装 [qyer-mobile-app](http://github.com/icyleaf/qyer-mobile-app) 的功能，用于上传 ipa 和相关参数到穷游内部分发系统。
@@ -84,6 +135,13 @@ lane :beta do
   qyer
 end
 ```
+
+打开你的终端执行:
+
+```bash
+$ fastlane ios beta
+```
+
 
 ### jenkins
 
