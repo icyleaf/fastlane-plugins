@@ -1,7 +1,6 @@
 require 'xcodeproj'
 require 'plist'
 
-
 module Fastlane
   module Actions
     module SharedValues

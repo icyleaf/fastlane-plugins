@@ -1,7 +1,8 @@
 module Fastlane
   module Actions
+    ##
+    # Qyer Action
     class QyerAction < Action
-
       ARGS_MAP = {
         api_key: '--key',
         ipa: '--file',
@@ -12,31 +13,31 @@ module Fastlane
         channel: '--channel',
         commit: '--commit',
         ci_url: '--ci-url'
-      }
+      }.freeze
 
       def self.run(params)
-        build_args = []
         build_args = params_to_build_args(params)
         build_args = build_args.join(' ')
 
         core_command = "qma publish #{build_args}"
-        command = "set -o pipefail && #{core_command}"
+        command = "set -o pipefail && #{core_command} --verbose"
 
         begin
           Actions.sh command
-        rescue => ex
-          raise "A build error occured, this is usually related to code signing. Take a look at the error above".red
+        rescue
+          raise 'A build error occured, this is usually related to code ' \
+                'signing. Take a look at the error above'.red
         end
       end
 
       def self.params_to_build_args(config)
         params = config.values
 
-        params = params.delete_if { |k, v| v.nil? }
+        params = params.delete_if { |_k, v| v.nil? }
         params = fill_in_default_values(params)
 
         params.collect do |k, v|
-          value = (v.to_s.length > 0 ? "\"#{v}\"" : '""')
+        value = (v.to_s.empty? ? '""' : "\"#{v}\"")
           "#{ARGS_MAP[k]} #{value}".strip
         end.compact
       end
@@ -44,37 +45,37 @@ module Fastlane
       def self.fill_in_default_values(params)
         case Actions.lane_context[:PLATFORM_NAME]
         when :ios
-          ipa = ENV["QYER_IPA"]
+          ipa = ENV['QYER_IPA']
           params[:ipa] ||= ipa if ipa
         when :android
-          apk = ENV["QYER_APK"]
+          apk = ENV['QYER_APK']
           params[:apk] ||= apk if apk
         else
-          raise "You have to either pass an ipa or an apk file to the Crashlytics action".red
+          raise 'You have to either pass an ipa or an apk file'.red
         end
 
-        api_key = ENV["QYER_API_KEY"]
+        api_key = ENV['QYER_API_KEY']
         params[:api_key] ||= api_key if api_key
 
-        app_name = ENV["QYER_APP_NAME"]
+        app_name = ENV['QYER_APP_NAME']
         params[:app_name] ||= app_name if app_name
 
-        slug = ENV["QYER_SLUG"]
+        slug = ENV['QYER_SLUG']
         params[:slug] ||= slug if slug
 
-        channel = ENV["QYER_CHANNEl"]
+        channel = ENV['QYER_CHANNEl']
         params[:channel] ||= channel if channel
 
-        changelog = ENV["JENKINS_CHANGLOG"] || ENV["QYER_CHANGELOG"]
+        changelog = ENV['JENKINS_CHANGLOG'] || ENV['QYER_CHANGELOG']
         params[:changelog] ||= changelog if changelog
 
-        branch = ENV["QYER_CVS_BRANCH"]
+        branch = ENV['QYER_CVS_BRANCH']
         params[:branch] ||= branch if branch
 
-        commit = ENV["JENKINS_CVS_COMMIT"] || ENV["QYER_CVS_COMMIT"]
+        commit = ENV['JENKINS_CVS_COMMIT'] || ENV['QYER_CVS_COMMIT']
         params[:commit] ||= commit if commit
 
-        ci_url = ENV["JENKINS_CI_URL"] || ENV["QYER_CI_URL"]
+        ci_url = ENV['JENKINS_CI_URL'] || ENV['QYER_CI_URL']
         params[:ci_url] ||= ci_url if ci_url
 
         params
@@ -92,16 +93,16 @@ module Fastlane
           FastlaneCore::ConfigItem.new(key: :ipa,
                                        env_name: 'QYER_IPA',
                                        description: 'Path to your IPA file. Optional if you use the `gym`, `ipa` or `xcodebuild` action. ',
-                                       default_value: Actions.lane_context[SharedValues::IPA_OUTPUT_PATH] || Dir["*.ipa"].last,
+                                       default_value: Actions.lane_context[SharedValues::IPA_OUTPUT_PATH] || Dir['*.ipa'].last,
                                        optional: true,
                                        verify_block: proc do |value|
                                          fail "Couldn't find ipa file at path '#{value}'".red unless File.exist?(value)
                                        end),
           # Android Specific
           FastlaneCore::ConfigItem.new(key: :apk,
-                                       env_name: "QYER_APK",
-                                       description: "Path to your APK file",
-                                       default_value: Actions.lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH] || Dir["*.apk"].last || Dir[File.join("app", "build", "outputs", "apk", "app-qyer-release.apk")].last,
+                                       env_name: 'QYER_APK',
+                                       description: 'Path to your APK file',
+                                       default_value: Actions.lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH] || Dir['*.apk'].last || Dir[File.join('app', 'build', 'outputs', 'apk', 'app-qyer-release.apk')].last,
                                        optional: true,
                                        verify_block: proc do |value|
                                          raise "Couldn't find apk file at path '#{value}'".red unless File.exist?(value)
@@ -134,7 +135,7 @@ module Fastlane
           FastlaneCore::ConfigItem.new(key: :ci_url,
                                        env_name: 'QYER_CI_URL',
                                        description: 'ci url',
-                                       optional: true),
+                                       optional: true)
         ]
       end
 
@@ -143,7 +144,7 @@ module Fastlane
       end
 
       def self.details
-        "More information on the qyer-mobile-app project page: https://github.com/icyleaf/qyer-mobile-app"
+        'More information on the qyer-mobile-app project page: https://github.com/icyleaf/qyer-mobile-app'
       end
 
       def self.author
