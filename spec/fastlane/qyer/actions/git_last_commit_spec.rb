@@ -20,8 +20,8 @@ describe Fastlane::Actions::GitLastCommitAction do
     end
 
     it 'should works with git repo project' do
-      info = git_last_commit(path: repo_path)
-      ap info 
+      git_last_commit(path: repo_path)
+
     end
   end
 end
