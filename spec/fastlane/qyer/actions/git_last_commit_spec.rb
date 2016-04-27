@@ -14,10 +14,10 @@ describe Fastlane::Actions::GitLastCommitAction do
       `git add -A && git commit -m 'first commit'`
     end
 
-    after do
-      # Clean up files
-      FileUtils.rm_r(repo_path)
-    end
+    # after do
+    #   # Clean up files
+    #   FileUtils.rm_r(repo_path)
+    # end
 
     it 'should works with git repo project' do
       ap repo_path
