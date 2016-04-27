@@ -1,10 +1,10 @@
+require 'date'
+
 module Fastlane
   module Actions
     ##
     # Git Last Commit
     class GitLastCommitAction < Action
-      require 'date'
-
       def self.run(params)
         @project_path = params[:path] || File.read_path('.')
         return unless git_repo?

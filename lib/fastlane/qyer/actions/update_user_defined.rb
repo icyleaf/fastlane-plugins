@@ -1,6 +1,5 @@
 require 'xcodeproj'
 require 'plist'
-require 'awesome_print'
 
 module Fastlane
   module Actions
