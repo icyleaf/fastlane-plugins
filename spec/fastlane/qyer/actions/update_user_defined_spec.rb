@@ -1,11 +1,11 @@
 describe Fastlane::Actions::UpdateUserDefinedAction do
-  describe 'Xcode bootstrap Integration' do
-    let (:test_path) { '/tmp/fastlane/tests/fastlane_qyer' }
-    let (:fixtures_path) { './spec/fixtures/xcodeproj' }
-    let (:proj_file) { 'bundle.xcodeproj' }
+  describe 'Update User Defined Integration' do
+    let(:test_path) { '/tmp/fastlane/tests/fastlane_qyer' }
+    let(:fixtures_path) { './spec/fixtures/xcodeproj' }
+    let(:proj_file) { 'bundle.xcodeproj' }
 
     # Action parameters
-    let (:xcodeproj) { File.join(test_path, proj_file) }
+    let(:xcodeproj) { File.join(test_path, proj_file) }
 
     before do
       # Create test folder
