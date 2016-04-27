@@ -20,6 +20,7 @@ describe Fastlane::Actions::GitLastCommitAction do
     end
 
     it 'should works with git repo project' do
+      ap repo_path
       ap Fastlane::FastFile.new.parse("lane :test do
         git_last_commit({
         path: '#{repo_path}'
