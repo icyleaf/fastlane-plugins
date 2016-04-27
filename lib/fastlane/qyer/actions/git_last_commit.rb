@@ -35,7 +35,7 @@ module Fastlane
       end
 
       def self.commit_date
-        DateTime.parse(`git log -1 --format=%ci`)
+        `git log -1 --format=%ci`
       end
 
       def self.git_repo?
