@@ -3,5 +3,3 @@
 require 'webmock/rspec'
 require 'fastlane'
 require 'fastlane-qyer'
-
-require 'awesome_print'
