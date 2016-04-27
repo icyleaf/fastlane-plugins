@@ -9,3 +9,5 @@ rvm:
 script:
   bundle exec rake spec
 sudo: false
+notifications:
+  email: false

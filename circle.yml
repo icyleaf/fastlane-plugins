@@ -1,9 +1,0 @@
-machine:
-  ruby:
-    version: 2.0.0
-dependencies:
-  pre:
-    - gem install bundler
-test:
-  post:
-    - bundle exec rake spec
