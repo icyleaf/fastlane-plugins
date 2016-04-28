@@ -22,12 +22,9 @@ module Fastlane
         core_command = "qma publish #{build_args}"
         command = "set -o pipefail && #{core_command} --verbose"
 
-        begin
-          Actions.sh command
-        rescue
-          raise 'A build error occured, this is usually related to code ' \
-                'signing. Take a look at the error above'.red
-        end
+        Actions.sh(command)
+      rescue Exception => e
+        raise "App 上传失败，请检查错误提示：#{e}".red
       end
 
       def self.params_to_build_args(config)
