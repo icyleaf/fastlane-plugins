@@ -1,90 +1,125 @@
+require 'qma'
+require 'fastlane_core'
+
 module Fastlane
   module Actions
+    module SharedValues
+      QYER_PUBLISH_URL = :QYER_PUBLISH_URL
+    end
+
     ##
     # Qyer Action
     class QyerAction < Action
-      ARGS_MAP = {
-        api_key: '--key',
-        ipa: '--file',
-        apk: '--file',
-        slug: '--slug',
-        changelog: '--changelog',
-        branch: '--branch',
-        channel: '--channel',
-        commit: '--commit',
-        ci_url: '--ci-url'
-      }.freeze
+      def self.run(options)
+        @options = options
+        @user_key = options.fetch(:api_key)
+        @config_file = options.fetch(:config_path)
+        @host_type = options.fetch(:host_type).to_sym
+        @file = options.fetch(:ipa)
+        @file = options.fetch(:apk) unless @file
+        UI.user_error! 'You have to either pass an ipa or an apk file' unless @file
 
-      def self.run(params)
-        build_args = params_to_build_args(params)
-        build_args = build_args.join(' ')
-
-        core_command = "qma publish #{build_args}"
-        command = "set -o pipefail && #{core_command} --verbose"
-
-        Actions.sh(command)
-      rescue Exception => e
-        raise "App 上传失败，请检查错误提示：#{e}".red
+        upload!
       end
 
-      def self.params_to_build_args(config)
-        params = config.values
+      def self.upload!
+        @client = QMA::Client.new(@user_key, config_file: @config_file)
 
-        params = params.delete_if { |_k, v| v.nil? }
-        params = fill_in_default_values(params)
+        print_table!
 
-        params.collect do |k, v|
-        value = (v.to_s.empty? ? '""' : "\"#{v}\"")
-          "#{ARGS_MAP[k]} #{value}".strip
-        end.compact
-      end
+        UI.message 'Uploading to qma...'
+        response = @client.upload(@file, host_type: @host_type, params: query_params)
 
-      def self.fill_in_default_values(params)
-        case Actions.lane_context[:PLATFORM_NAME]
-        when :ios
-          ipa = ENV['QYER_IPA']
-          params[:ipa] ||= ipa if ipa
-        when :android
-          apk = ENV['QYER_APK']
-          params[:apk] ||= apk if apk
+        case response[:code]
+        when 201
+          new_upload(response)
+        when 200
+          found_exist(response)
+        when 400..428
+          fail_valid(response)
         else
-          raise 'You have to either pass an ipa or an apk file'.red
+          UI.user_error! "[ERROR] #{json[:message]}"
         end
 
-        api_key = ENV['QYER_API_KEY']
-        params[:api_key] ||= api_key if api_key
+        true
+      end
 
-        app_name = ENV['QYER_APP_NAME']
-        params[:app_name] ||= app_name if app_name
+      def self.new_upload(json)
+        url = app_url(json[:entry])
+        shared_url(url)
 
-        slug = ENV['QYER_SLUG']
-        params[:slug] ||= slug if slug
+        UI.success 'Successful uploaded file'
+        UI.success url
+      end
 
-        channel = ENV['QYER_CHANNEl']
-        params[:channel] ||= channel if channel
+      def self.found_exist(json)
+        url = app_url(json[:entry], true)
+        shared_url(url)
 
-        changelog = ENV['JENKINS_CHANGLOG'] || ENV['QYER_CHANGELOG']
-        params[:changelog] ||= changelog if changelog
+        UI.important 'Existed version in server'
+        UI.success url
+      end
 
-        branch = ENV['QYER_CVS_BRANCH']
-        params[:branch] ||= branch if branch
+      def self.fail_valid(json)
+        unless json.empty?
+          errors = ["[ERROR] #{json[:message]}"]
+          json[:entry].each_with_index do |(key, items), i|
+            errors.push "#{i + 1}. #{key}"
+            items.each do |item|
+              errors.push "- #{item}"
+            end
+          end
 
-        commit = ENV['JENKINS_CVS_COMMIT'] || ENV['QYER_CVS_COMMIT']
-        params[:commit] ||= commit if commit
+          UI.user_error! errors.join("\n")
+        end
+      end
 
-        ci_url = ENV['JENKINS_CI_URL'] || ENV['QYER_CI_URL']
-        params[:ci_url] ||= ci_url if ci_url
+      def self.shared_url(url)
+        Actions.lane_context[SharedValues::QYER_PUBLISH_URL] = url
+        ENV[SharedValues::QYER_PUBLISH_URL.to_s] = url
+      end
 
-        params
+      def self.app_url(json, version = false)
+        host = json['host']['external']
+        slug = json['app']['slug']
+        paths = [host, 'apps', slug]
+        paths.push(json['id'].to_s) if version
+
+        paths.join('/')
+      end
+
+      def self.query_params
+        @params = {
+          channel: @options.fetch(:channel),
+          branch: @options.fetch(:branch),
+          last_commit: @options.fetch(:commit),
+          ci_url: @options.fetch(:ci_url),
+          changelog: @options.fetch(:changelog)
+        }
+
+        @params.merge!(@options.fetch(:custom_data)) if @options.fetch(:custom_data)
+
+        @params
+      end
+
+      def self.print_table!
+        params = {
+          url: @client.config.send("#{@host_type}_host"),
+          user_key: @user_key,
+          file: @file
+        }.merge(query_params)
+
+        FastlaneCore::PrintTable.print_values(config: params,
+                                              title: "Summary for qyer #{QMA::VERSION}")
       end
 
       def self.available_options
         [
           FastlaneCore::ConfigItem.new(key: :api_key,
                                        env_name: 'QYER_API_KEY',
-                                       description: 'API Key for Qyer Mobile AdHoc Access',
+                                       description: 'API Key',
                                        verify_block: proc do |value|
-                                         fail "No API Key for Qyer Mobile AdHoc given, pass using `api_key: 'token'`".red unless value && !value.empty?
+                                         raise 'No API key, please input again'.red unless value && !value.empty?
                                        end),
           # iOS Specific
           FastlaneCore::ConfigItem.new(key: :ipa,
@@ -93,18 +128,17 @@ module Fastlane
                                        default_value: Actions.lane_context[SharedValues::IPA_OUTPUT_PATH] || Dir['*.ipa'].last,
                                        optional: true,
                                        verify_block: proc do |value|
-                                         fail "Couldn't find ipa file at path '#{value}'".red unless File.exist?(value)
+                                         raise "Couldn't find ipa file".red unless File.exist?(value)
                                        end),
           # Android Specific
           FastlaneCore::ConfigItem.new(key: :apk,
                                        env_name: 'QYER_APK',
                                        description: 'Path to your APK file',
-                                       default_value: Actions.lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH] || Dir['*.apk'].last || Dir[File.join('app', 'build', 'outputs', 'apk', 'app-qyer-release.apk')].last,
+                                       default_value: Actions.lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH] || Dir['*.apk'].last,
                                        optional: true,
                                        verify_block: proc do |value|
-                                         raise "Couldn't find apk file at path '#{value}'".red unless File.exist?(value)
+                                         raise "Couldn't find apk file".red unless File.exist?(value)
                                        end),
-
           FastlaneCore::ConfigItem.new(key: :app_name,
                                        env_name: 'QYER_APP_NAME',
                                        description: 'App Name',
@@ -116,22 +150,41 @@ module Fastlane
           FastlaneCore::ConfigItem.new(key: :changelog,
                                        env_name: 'QYER_CHANGELOG',
                                        description: 'Changelog',
+                                       default_value: Actions.lane_context[SharedValues::JENKINS_CHANGLOG],
                                        optional: true),
           FastlaneCore::ConfigItem.new(key: :channel,
                                        env_name: 'QYER_CHANNEL',
                                        description: 'upload channel name',
+                                       default_value: 'fastlane',
                                        optional: true),
           FastlaneCore::ConfigItem.new(key: :branch,
                                        env_name: 'QYER_GIT_BRANCH',
                                        description: 'git branch name',
+                                       default_value: Actions.lane_context[SharedValues::JENKINS_CVS_BRANCH],
                                        optional: true),
           FastlaneCore::ConfigItem.new(key: :commit,
                                        env_name: 'QYER_GIT_COMMIT',
                                        description: 'git last commit',
+                                       default_value: Actions.lane_context[SharedValues::JENKINS_CVS_COMMIT],
                                        optional: true),
           FastlaneCore::ConfigItem.new(key: :ci_url,
                                        env_name: 'QYER_CI_URL',
+                                       default_value: Actions.lane_context[SharedValues::JENKINS_CI_URL],
                                        description: 'ci url',
+                                       optional: true),
+
+          FastlaneCore::ConfigItem.new(key: :config_path,
+                                       env_name: 'QYER_CONFIG_PATH',
+                                       description: 'The path to qma confiuration file',
+                                       optional: true),
+          FastlaneCore::ConfigItem.new(key: :host_type,
+                                       env_name: 'QYER_HOST_TYPE',
+                                       description: 'The host type to upload host domain',
+                                       default_value: 'external',
+                                       optional: true),
+          FastlaneCore::ConfigItem.new(key: :custom_data,
+                                       env_name: 'QYER_CUSTOM_DATA',
+                                       description: 'Custom data to build query params',
                                        optional: true)
         ]
       end

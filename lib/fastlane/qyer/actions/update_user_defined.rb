@@ -3,10 +3,12 @@ require 'plist'
 
 module Fastlane
   module Actions
+    ##
+    # UpdateUserDefinedAction
     class UpdateUserDefinedAction < Action
       def self.run(params)
         @project_path = params[:project_path]
-        UI.user_error!("Could not find Xcode project") unless File.exist?(@project_path)
+        UI.user_error!('Could not find Xcode project') unless File.exist?(@project_path)
         UI.user_error!('Please pass the name of user-defined setting') unless params[:name]
         UI.user_error!('Please pass the value of user-defined setting') unless params[:value]
 

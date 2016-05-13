@@ -1,3 +1,5 @@
+require 'webmock/rspec'
+
 describe Fastlane::Actions::JenkinsAction do
 
   describe 'Information' do
