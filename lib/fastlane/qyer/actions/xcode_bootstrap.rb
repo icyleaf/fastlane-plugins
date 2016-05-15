@@ -174,7 +174,7 @@ module Fastlane
       end
 
       def self.description
-        'Easy bootstrap xcode project'
+        'Easy bootstrap xcode project (alpine)'
       end
 
       def self.details

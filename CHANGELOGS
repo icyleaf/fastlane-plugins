@@ -1,18 +1,36 @@
 # 更新日志
 
+## v0.6.2
+
+- [FEATURE] qyer action 使用类上传格式化更友好的信息替换 qma cli
+- [STYLE] 根据 rucobop 规范化代码
+- [DOC] xcode_bootstrap 打上 alpine 实验标识
+
+## v0.6.1
+
+- [FEATURE] qyer action 上传时追加更多参数信息
+
+## v0.6.0
+
+- [FEATURE] 增加 last_git_commit action
+
+## v0.5.0
+
+- [FEATURE] 尝试增加初始化 xcode 使用自动构建的 action
+
 ## v0.4.0
 
-- 配合 Fastlane 的 gradle action，支持 qyer action 的 android apk 的上传
-- 更新 fastlane 最低依赖 v1.34.0 以上版本
+- [FEATURE] 配合 Fastlane 的 gradle action，支持 qyer action 的 android apk 的上传
+- [FEATURE] 更新 Fastlane 最低依赖 v1.34.0 以上版本
 
 ## v0.3.0
 
-- 针对 `jenkins` action 增加参数可配置是否强制构建（如果本次构建和上次一致可停止构建）
+- [FEATURE] 针对 `jenkins` action 增加参数可配置是否强制构建（如果本次构建和上次一致可停止构建）
 
 ## v0.2.0
 
-- 添加 `jenkins` action
+- [FEATURE] 添加 `jenkins` action
 
 ## v0.1.0
 
-- 添加 `qyer` action
+- [FEATURE] 添加 `qyer` action
