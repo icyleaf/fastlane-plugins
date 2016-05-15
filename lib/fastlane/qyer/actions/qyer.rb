@@ -19,14 +19,14 @@ module Fastlane
         @file = options.fetch(:apk) unless @file
         UI.user_error! 'You have to either pass an ipa or an apk file' unless @file
 
+        @app = QMA::App.parse(@file)
+        @client = QMA::Client.new(@user_key, config_file: @config_file)
+
+        print_table!
         upload!
       end
 
       def self.upload!
-        @client = QMA::Client.new(@user_key, config_file: @config_file)
-
-        print_table!
-
         UI.message 'Uploading to qma...'
         response = @client.upload(@file, host_type: @host_type, params: query_params)
 
@@ -38,10 +38,10 @@ module Fastlane
         when 400..428
           fail_valid(response)
         else
-          UI.user_error! "[ERROR] #{json[:message]}"
+          UI.user_error! json[:message].to_s
         end
 
-        true
+        response[:code]
       end
 
       def self.new_upload(json)
@@ -56,12 +56,14 @@ module Fastlane
         url = app_url(json[:entry], true)
         shared_url(url)
 
-        UI.important 'Existed version in server'
-        UI.success url
+        UI.important 'This version had been uploaded.'
+        UI.important url
       end
 
       def self.fail_valid(json)
-        unless json.empty?
+        if json.empty?
+          UI.user_error! 'Unkonwn error!'
+        else
           errors = ["[ERROR] #{json[:message]}"]
           json[:entry].each_with_index do |(key, items), i|
             errors.push "#{i + 1}. #{key}"
@@ -90,6 +92,11 @@ module Fastlane
 
       def self.query_params
         @params = {
+          name: @app.name,
+          device_type: @app.device_type,
+          identifier: @app.identifier,
+          release_version: @app.release_version,
+          build_version: @app.build_version,
           channel: @options.fetch(:channel),
           branch: @options.fetch(:branch),
           last_commit: @options.fetch(:commit),
@@ -190,7 +197,7 @@ module Fastlane
       end
 
       def self.description
-        'Upload a new build to Qyer Mobile System'
+        'Upload a new build to QMA'
       end
 
       def self.details

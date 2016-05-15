@@ -34,20 +34,20 @@ describe Fastlane::Actions::QyerAction do
       end.to raise_error('You have to either pass an ipa or an apk file')
     end
 
-    it 'should works an exception if not pass ipa or apk file' do
-      file = '/Users/wiiseer/Downloads/ipQYER_6.9.1_05121806_201605121910.ipa'
-      allow(File).to receive(:exist?).and_call_original
-      # allow(File).to receive(:exist?).with(file).and_return(true)
-
-      ENV['QYER_GIT_BRANCH'] = 'develop'
-      result = Fastlane::FastFile.new.parse("lane :test do
-          qyer(
-            api_key: '75f4d21a3d4efbd9ba9217eb6989a35b',
-            ipa: '#{file}'
-          )
-        end").runner.execute(:test)
-
-      expect(result).to eq('') # raise_error("Couldn't find ipa file")
-    end
+    # it 'should works an exception if not pass ipa or apk file' do
+    #   file = 'stub'
+    #   allow(File).to receive(:exist?).and_call_original
+    #   allow(File).to receive(:exist?).with(file).and_return(true)
+    #
+    #   ENV['QYER_GIT_BRANCH'] = 'develop'
+    #   expect do
+    #     Fastlane::FastFile.new.parse("lane :test do
+    #       qyer(
+    #         api_key: '75f4d21a3d4efbd9ba9217eb6989a35b',
+    #         ipa: '#{file}'
+    #       )
+    #     end").runner.execute(:test)
+    #   end.to raise_error("Couldn't find ipa file")
+    # end
   end
 end
