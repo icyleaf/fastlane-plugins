@@ -10,12 +10,11 @@ module Fastlane
     end
 
     class XcodeBootstrapAction < Action
-
       def self.run(params)
         @project_path = params[:project_path]
 
-        UI.user_error!("Please pass the path to the project (.xcodeproj)") unless @project_path.to_s.end_with?(".xcodeproj")
-        UI.user_error!("Could not find Xcode project") unless File.exist?(@project_path)
+        UI.user_error!('Please pass the path to the project (.xcodeproj)') unless @project_path.to_s.end_with?('.xcodeproj')
+        UI.user_error!('Could not find Xcode project') unless File.exist?(@project_path)
 
         @project_name = @project_path.split('/')[-1]
         @use_cocoapods = params[:cocoapods]
@@ -28,37 +27,36 @@ module Fastlane
         @build_configuration_base = params[:build_configuration_base]
 
         @project = Xcodeproj::Project.open(@project_path)
-        UI.user_error!("Not found any target in project") if @project.targets.size == 0
+        UI.user_error!('Not found any target in project') if @project.targets.empty?
 
         @target_name = @project.targets[0].name
-
         if @use_cocoapods
           if pods_exists?
             podfile_bootstrap!
           else
-            UI.user_error("Podfile does not exist.")
+            UI.user_error('Podfile does not exist.')
           end
         end
 
         xcode_bootstrap!
 
         # return as success
-        UI.success("bootstrap up! 🚀")
+        UI.success('bootstrap up! 🚀')
       end
 
       def self.xcode_bootstrap!
-        unless @project.build_configuration_list[@build_configuration_name]
+        if @project.build_configuration_list[@build_configuration_name]
+          UI.user_error!("Build configuration `#{@build_configuration_name}` is exists, check again.")
+        else
           add_build_configuration(@build_configuration_name, @build_configuration_base)
           @project.save
-        else
-          UI.user_error!("Build configuration `#{@build_configuration_name}` is exists, check again.")
         end
       end
 
       def self.podfile_bootstrap!
-        add_build_configuration_to_podfile = "xcodeproj '#{project_name.split('.')[0]}', '#{build_configuration_name}' => :#{build_configuration_base.to_s}"
+        add_build_configuration_to_podfile = "xcodeproj '#{project_name.split('.')[0]}', '#{build_configuration_name}' => :#{build_configuration_base}"
 
-        command = %Q{cat #{podfile_path} | grep "#{add_build_configuration_to_podfile}" | wc -l}
+        command = %(cat #{podfile_path} | grep "#{add_build_configuration_to_podfile}" | wc -l)
         r = Actions.sh(command, log: false)
         unless r.strip.to_i > 0
           UI.message("Adding #{build_configuration_name} build configuration to Podfile")
@@ -100,25 +98,27 @@ module Fastlane
       end
 
       def self.pod_build_configuration(name)
-        @project.objects.select { |obj| obj.isa == 'PBXFileReference' &&
-          !obj.name.nil? &&
-          obj.name.include?(".#{name.downcase}.xcconfig")
-        }[0]
+        @project.objects.select do |obj|
+          obj.isa == 'PBXFileReference' &&
+            !obj.name.nil? &&
+            obj.name.include?(".#{name.downcase}.xcconfig")
+        end[0]
       end
 
       def self.info_plist_path
-        @project.objects.select { |obj| obj.isa == 'XCBuildConfiguration' &&
-          !obj.build_settings['PRODUCT_BUNDLE_IDENTIFIER'].nil?
-        }[0].build_settings['INFOPLIST_FILE']
+        @project.objects.select do |obj|
+          obj.isa == 'XCBuildConfiguration' &&
+            !obj.build_settings['PRODUCT_BUNDLE_IDENTIFIER'].nil?
+        end[0].build_settings['INFOPLIST_FILE']
       end
 
       def self.app_suffix_valid!
         UI.user_error!('Invaild app suffix format. please check `fastlane action xcode_bootstrap`') unless @app_suffix.class == Hash
-        @app_suffix.each do |name, dict|
-          UI.user_error!() unless dict.class == Hash
-          UI.user_error!() unless dict.keys == [:name, :identifier]
-          dict.each do |key, value|
-            UI.user_error!() unless value.class == String
+        @app_suffix.each do |_name, dict|
+          UI.user_error!('no') unless dict.class == Hash
+          UI.user_error!('no') unless dict.keys == [:name, :identifier]
+          dict.each do |_key, value|
+            UI.user_error!('no') unless value.class == String
           end
         end
       end
@@ -160,8 +160,8 @@ module Fastlane
                                           'Release' => {
                                             name: '',
                                             identifier: ''
-                                          },
-                                        }),
+                                          }
+                                        })
         ]
       end
 
@@ -169,7 +169,7 @@ module Fastlane
         [
           ['XCODE_PROJECT_PATH', 'The xcode project path of your app'],
           ['XCODE_PROJECT_NAME', 'The xcode project name of your app'],
-          ['XCODE_APP_IDENTIFIER', 'The identifier of your appp'],
+          ['XCODE_APP_IDENTIFIER', 'The identifier of your appp']
         ]
       end
 
@@ -178,7 +178,7 @@ module Fastlane
       end
 
       def self.details
-        "Quick append build configuration and support cocoapods"
+        'Quick append build configuration and support cocoapods'
       end
 
       def self.author
