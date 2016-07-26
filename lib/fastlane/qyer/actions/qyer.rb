@@ -106,7 +106,7 @@ module Fastlane
       end
 
       def self.custom_data
-        params = @options.fetch(:custom_data, {})
+        params = @options[:custom_data] || {}
 
         if @app.os == 'iOS' && @app.mobileprovision && !@app.mobileprovision.empty?
           params[:profile_name] = @app.profile_name
