@@ -8,6 +8,10 @@ RSpec::Core::RakeTask.new(:spec)
 
 task :default => :spec
 
+task :test do
+  
+end
+
 task :helper do
   project_path = '/Users/wiiseer/Development/qyer/ios/FastlaneTest/FastlaneTest.xcodeproj'
   helper = Fastlane::Qyer::Helper::XcodeHelper.new(project_path)

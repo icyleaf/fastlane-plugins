@@ -1,42 +1,44 @@
 require 'qma'
 require 'qma/core_ext/object/to_column'
 require 'fastlane_core'
+require 'terminal-table'
 
 module Fastlane
   module Actions
-    module SharedValues
-      QYER_PUBLISH_URL = :QYER_PUBLISH_URL
-    end
-
     ##
     # App Info Action
     class AppInfoAction < Action
       def self.run(options)
         @file = options.fetch(:file)
         UI.user_error! 'You have to either pass an ipa or an apk file' unless @file
-
+        @file = File.expand_path(@file)
         @app = QMA::App.parse(@file)
+
         print_table!
       end
 
       def self.print_table!
-        params = query_params
-        params.merge(ipa_mobileprovision) if @app.os == 'iOS'
-
-        FastlaneCore::PrintTable.print_values(config: params,
-                                              title: 'Summary for app_info')
+        table = query_params
+        table = ipa_mobileprovision(table) if @app.os == 'iOS'
+        table.title = 'Summary for app_info'
+        puts "\n#{table}\n"
       end
 
       def self.query_params
         keys = %w(name release_version build_version identifier os)
-        keys.each_with_object({}) do |key, obj|
-          obj[key.to_sym] = @app.send(key.to_sym)
+        Terminal::Table.new do |t|
+          keys.each do |key|
+            columns = []
+            columns << key.capitalize
+            columns << @app.send(key.to_sym).to_column
+
+            t << columns
+          end
         end
       end
 
-      def self.ipa_mobileprovision!
-        params = {}
-        return params if !@app.mobileprovision? || @app.mobileprovision.nil?
+      def self.ipa_mobileprovision(table)
+        return table unless @app.mobileprovision && !@app.mobileprovision.empty?
 
         @app.mobileprovision.mobileprovision.each do |key, value|
           next if key == 'DeveloperCertificates'
@@ -51,10 +53,14 @@ module Fastlane
               key
             end
 
-          params[name] = value.to_column
+          columns = []
+          columns << name
+          columns << value.to_column
+
+          table << columns
         end
 
-        params
+        table
       end
 
       def self.available_options

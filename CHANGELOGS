@@ -1,5 +1,9 @@
 # 更新日志
 
+## v0.7.0
+
+- [FEATURE] 增加 app_info action 用于获取 ipa/apk 的元数据
+
 ## v0.6.2
 
 - [FEATURE] qyer action 使用类上传格式化更友好的信息替换 qma cli

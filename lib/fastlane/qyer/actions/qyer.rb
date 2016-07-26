@@ -102,11 +102,20 @@ module Fastlane
           last_commit: @options.fetch(:commit),
           ci_url: @options.fetch(:ci_url),
           changelog: @options.fetch(:changelog)
-        }
+        }.merge(custom_data)
+      end
 
-        @params.merge!(@options.fetch(:custom_data)) if @options.fetch(:custom_data)
+      def self.custom_data
+        params = @options.fetch(:custom_data, {})
 
-        @params
+        if @app.os == 'iOS' && @app.mobileprovision && !@app.mobileprovision.empty?
+          params[:profile_name] = @app.profile_name
+          params[:profile_created_at] = @app.mobileprovision.created_date
+          params[:profile_expired_at] = @app.mobileprovision.expired_date
+          params[:devices] = @app.devices
+        end
+
+        params
       end
 
       def self.print_table!
