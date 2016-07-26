@@ -1,8 +1,9 @@
 # 更新日志
 
-## v0.7.0
+## v0.7.1
 
 - [FEATURE] 增加 app_info action 用于获取 ipa/apk 的元数据
+- [FEATURE] 修复 qyer action 增加 custom_data 报错的问题
 
 ## v0.6.2
 
