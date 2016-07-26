@@ -126,7 +126,8 @@ module Fastlane
         }.merge(query_params)
 
         FastlaneCore::PrintTable.print_values(config: params,
-                                              title: "Summary for qyer #{QMA::VERSION}")
+                                              title: "Summary for qyer #{QMA::VERSION}",
+                                              hide_keys: [:devices])
       end
 
       def self.available_options
