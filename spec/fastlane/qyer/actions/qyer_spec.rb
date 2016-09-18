@@ -27,6 +27,12 @@ describe Fastlane::Actions::QyerAction do
   describe 'Qyer Integration' do
     it 'should throws an exception if not pass ipa or apk file' do
       ENV['QYER_API_KEY'] = 'test'
+      Fastlane::Actions::SharedValues::IPA_OUTPUT_PATH = ''
+      Fastlane::Actions::SharedValues::GRADLE_APK_OUTPUT_PATH = ''
+      Fastlane::Actions::SharedValues::JENKINS_CHANGLOG = ''
+      Fastlane::Actions::SharedValues::JENKINS_CVS_BRANCH = ''
+      Fastlane::Actions::SharedValues::JENKINS_CVS_COMMIT = ''
+      Fastlane::Actions::SharedValues::JENKINS_CI_URL = ''
       expect do
         Fastlane::FastFile.new.parse('lane :test do
             qyer

@@ -1,7 +1,7 @@
 describe Fastlane::Actions::UpdateUserDefinedAction do
   describe 'Update User Defined Integration' do
     let(:test_path) { '/tmp/fastlane/tests/fastlane_qyer' }
-    let(:fixtures_path) { './spec/fixtures/xcodeproj' }
+    let(:fixtures_path) { File.dirname(__FILE__) + '/../../../fixtures/xcodeproj' }
     let(:proj_file) { 'bundle.xcodeproj' }
 
     # Action parameters
@@ -10,11 +10,11 @@ describe Fastlane::Actions::UpdateUserDefinedAction do
     before do
       # Create test folder
       FileUtils.mkdir_p(test_path)
-      source = File.join(fixtures_path, proj_file)
-      destination = File.join(test_path, proj_file)
+      source_path = File.join(fixtures_path, proj_file)
+      destination_path = File.join(test_path, proj_file)
 
       # Copy .xcodeproj fixture, as it will be modified during the test
-      FileUtils.cp_r(source, destination)
+      FileUtils.cp_r(source_path, destination_path)
     end
 
     after do
