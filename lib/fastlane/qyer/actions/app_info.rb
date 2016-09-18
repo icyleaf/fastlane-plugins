@@ -12,7 +12,7 @@ module Fastlane
         @file = options.fetch(:file)
         UI.user_error! 'You have to either pass an ipa or an apk file' unless @file
         @file = File.expand_path(@file)
-        @app = QMA::App.parse(@file)
+        @app = AppInfo.parse(@file)
 
         print_table!
       end

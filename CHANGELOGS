@@ -1,5 +1,9 @@
 # 更新日志
 
+## v0.7.3
+
+- [BUGFIX] 更新 qyer-mobile-app 最低版本依赖和引用
+
 ## v0.7.2
 
 - [FEATURE] 增加 app_info action 用于获取 ipa/apk 的元数据
