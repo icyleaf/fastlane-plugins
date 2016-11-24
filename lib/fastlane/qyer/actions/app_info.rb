@@ -1,6 +1,5 @@
 require 'qma'
 require 'qma/core_ext/object/to_column'
-require 'fastlane_core'
 require 'terminal-table'
 
 module Fastlane

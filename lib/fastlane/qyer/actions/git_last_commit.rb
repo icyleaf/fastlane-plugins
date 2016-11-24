@@ -1,3 +1,4 @@
+require 'fastlane/helper/sh_helper'
 require 'date'
 
 module Fastlane
@@ -10,6 +11,7 @@ module Fastlane
       GIT_LAST_COMMIT_DATE = :GIT_LAST_COMMIT_DATE
       GIT_LAST_COMMIT_SUBJECT = :GIT_LAST_COMMIT_SUBJECT
     end
+
     ##
     # Git Last Commit
     class GitLastCommitAction < Action
