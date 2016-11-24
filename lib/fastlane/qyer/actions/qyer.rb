@@ -84,7 +84,7 @@ module Fastlane
         host = json['host']['external']
         slug = json['app']['slug']
         paths = [host, 'apps', slug]
-        paths.push(json['id'].to_s) if version
+        paths.push(json['version'].to_s) if version
 
         paths.join('/')
       end
