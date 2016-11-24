@@ -1,3 +1,6 @@
+require 'fastlane_core'
+
+require 'fastlane/qyer/helper/jenkins_helper'
 require 'fastlane/qyer/helper/xcode'
 
 require 'fastlane/qyer/actions/qyer'

@@ -1,5 +1,4 @@
 require 'qma'
-require 'fastlane_core'
 
 module Fastlane
   module Actions
@@ -113,6 +112,11 @@ module Fastlane
           params[:profile_created_at] = @app.mobileprovision.created_date
           params[:profile_expired_at] = @app.mobileprovision.expired_date
           params[:devices] = @app.devices
+        end
+
+        if jenkins?
+          params[:ci_name] = ENV['JOB_NAME']
+          params[:git_url] = ENV['GIT_URL']
         end
 
         params
