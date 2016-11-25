@@ -114,7 +114,7 @@ module Fastlane
           params[:devices] = @app.devices
         end
 
-        if jenkins?
+        if Actions.jenkins?
           params[:ci_name] = ENV['JOB_NAME']
           params[:git_url] = ENV['GIT_URL']
         end
