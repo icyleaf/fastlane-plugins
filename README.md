@@ -1,10 +1,21 @@
-# fastlane-qyer
+# fastlane-qyer (停止维护，看如下迁移说明)
 
 [![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://github.com/icyleaf/fastlane-qyer/blob/master/LICENSE)
 [![Gem](https://img.shields.io/gem/v/fastlane-qyer.svg?style=flat)](http://rubygems.org/gems/fastlane-qyer)
 [![Build Status](https://travis-ci.org/icyleaf/fastlane-qyer.svg?branch=master)](https://travis-ci.org/icyleaf/fastlane-qyer)
 
 [fastlane](http://github.com/fastlane/fastlane) 的自定义 action，制定了一些用于穷游网移动开发项目使用到的 `lanes`，底层依赖于 `qyer-mobile-app` gem，提供上传内部分发系统。
+
+## 迁移说明
+
+本工具是在 fastlane 前期过程中的产物，在 fastlane 支持 plugins 之后，该工具已拆分并分享为如下个插件：
+
+插件 | 原由 action | 说明 |
+---|---|---
+[fastlane-plugin-ci_changelog](https://github.com/icyleaf/fastlane-plugin-ci_changelog) | jenkins | 支持多种 CI 系统自动生成变更历史
+[fastlane-plugin-humanable_build_number](https://github.com/icyleaf/fastlane-plugin-humanable_build_number) | - | 生成开发可识别的构建版本号
+[fastlane-plugin-app_info](https://github.com/icyleaf/fastlane-plugin-app_info) | - | 解析 apk/ipa 包的 metadata 并打印
+[fastlane-plugin-upload_to_qmobile](https://github.com/icyleaf/fastlane-plugin-upload_to_qmobile) | qyer | 上传只 qmobile 新系统
 
 ## 安装配置
 
@@ -182,4 +193,3 @@ end
 ## 发布协议
 
 [MIT License](http://opensource.org/licenses/MIT).
-
