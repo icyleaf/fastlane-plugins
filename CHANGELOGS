@@ -1,5 +1,23 @@
 # 更新日志
 
+## v0.7.6
+
+- [BUGFIX] 和网站端策略调整修改 app 指定版本的地址规则
+
+## v0.7.4
+
+- [BUGFIX] 更新 xcodeproj 最低版本依赖和引用
+
+## v0.7.3
+
+- [BUGFIX] 更新 qyer-mobile-app 最低版本依赖和引用
+
+## v0.7.2
+
+- [FEATURE] 增加 app_info action 用于获取 ipa/apk 的元数据
+- [FEATURE] 修复 qyer action 增加 custom_data 报错的问题
+- [FEATURE] qyer action 上传打印的表格不显示 devices
+
 ## v0.6.2
 
 - [FEATURE] qyer action 使用类上传格式化更友好的信息替换 qma cli

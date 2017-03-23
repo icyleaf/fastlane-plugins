@@ -2,3 +2,5 @@
 
 require 'fastlane'
 require 'fastlane-qyer'
+
+require 'webmock/rspec'

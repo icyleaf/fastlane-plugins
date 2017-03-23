@@ -1,5 +1,4 @@
 require 'qma'
-require 'fastlane_core'
 
 module Fastlane
   module Actions
@@ -19,7 +18,7 @@ module Fastlane
         @file = options.fetch(:apk) unless @file
         UI.user_error! 'You have to either pass an ipa or an apk file' unless @file
 
-        @app = QMA::App.parse(@file)
+        @app = AppInfo.parse(@file)
         @client = QMA::Client.new(@user_key, config_file: @config_file)
 
         print_table!
@@ -85,7 +84,7 @@ module Fastlane
         host = json['host']['external']
         slug = json['app']['slug']
         paths = [host, 'apps', slug]
-        paths.push(json['id'].to_s) if version
+        paths.push(json['version'].to_s) if version
 
         paths.join('/')
       end
@@ -102,11 +101,25 @@ module Fastlane
           last_commit: @options.fetch(:commit),
           ci_url: @options.fetch(:ci_url),
           changelog: @options.fetch(:changelog)
-        }
+        }.merge(custom_data)
+      end
 
-        @params.merge!(@options.fetch(:custom_data)) if @options.fetch(:custom_data)
+      def self.custom_data
+        params = @options[:custom_data] || {}
 
-        @params
+        if @app.os == 'iOS' && @app.mobileprovision && !@app.mobileprovision.empty?
+          params[:profile_name] = @app.profile_name
+          params[:profile_created_at] = @app.mobileprovision.created_date
+          params[:profile_expired_at] = @app.mobileprovision.expired_date
+          params[:devices] = @app.devices
+        end
+
+        if Actions.jenkins?
+          params[:ci_name] = ENV['JOB_NAME']
+          params[:git_url] = ENV['GIT_URL']
+        end
+
+        params
       end
 
       def self.print_table!
@@ -117,7 +130,8 @@ module Fastlane
         }.merge(query_params)
 
         FastlaneCore::PrintTable.print_values(config: params,
-                                              title: "Summary for qyer #{QMA::VERSION}")
+                                              title: "Summary for qyer #{QMA::VERSION}",
+                                              hide_keys: [:devices])
       end
 
       def self.available_options

@@ -31,7 +31,7 @@ describe Fastlane::Actions::XcodeBootstrapAction do
   describe "Xcode bootstrap Integration" do
     # Variables
     let (:test_path) { "/tmp/fastlane/tests/fastlane_qyer" }
-    let (:fixtures_path) { "./spec/fixtures/xcodeproj" }
+    let (:fixtures_path) { File.dirname(__FILE__) + "/../../../fixtures/xcodeproj" }
     let (:proj_file) { "bundle.xcodeproj" }
     let (:pod_file) { "Podfile" }
     let (:app_suffix) { {
