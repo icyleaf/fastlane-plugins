@@ -13,7 +13,7 @@
 插件 | 原由 action | 说明 |
 ---|---|---
 [fastlane-plugin-ci_changelog](https://github.com/icyleaf/fastlane-plugin-ci_changelog) | jenkins | 支持多种 CI 系统自动生成变更历史
-[fastlane-plugin-update_jenkins_build](https://github.com/icyleaf/fastlane-plugin-update_jenkins_build) | update_jenkins_build | 自动更新 Jenkins Build 描述
+[fastlane-plugin-update_jenkins_build](https://github.com/icyleaf/fastlane-plugin-update_jenkins_build) | - | 自动更新 Jenkins Build 描述
 [fastlane-plugin-humanable_build_number](https://github.com/icyleaf/fastlane-plugin-humanable_build_number) | - | 生成开发可识别的构建版本号
 [fastlane-plugin-app_info](https://github.com/icyleaf/fastlane-plugin-app_info) | - | 解析 apk/ipa 包的 metadata 并打印
 [fastlane-plugin-upload_to_qmobile](https://github.com/icyleaf/fastlane-plugin-upload_to_qmobile) | qyer | 上传只 qmobile 新系统
