@@ -15,7 +15,7 @@
 [fastlane-plugin-update_jenkins_build](https://github.com/icyleaf/fastlane-plugin-update_jenkins_build) | - | 自动更新 Jenkins Build 描述
 [fastlane-plugin-humanable_build_number](https://github.com/icyleaf/fastlane-plugin-humanable_build_number) | - | 生成开发可识别的构建版本号
 [fastlane-plugin-app_info](https://github.com/icyleaf/fastlane-plugin-app_info) | - | 解析 apk/ipa 包的 metadata 并打印
-[fastlane-plugin-android_channels](https://github.com/icyleaf/fastlane-plugin-android_channels) | android_channels | 通用性 Android 多渠道打包
+[fastlane-plugin-android_channels](https://github.com/icyleaf/fastlane-plugin-android_channels) | - | 通用性 Android 多渠道打包
 [fastlane-plugin-upload_to_qmobile](https://github.com/icyleaf/fastlane-plugin-upload_to_qmobile) | qyer | 上传只 qmobile 新系统
 
 <hr />
