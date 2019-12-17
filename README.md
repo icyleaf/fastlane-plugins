@@ -1,7 +1,6 @@
 # fastlane-plugins
 
-[![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://github.com/icyleaf/fastlane-qyer/blob/master/LICENSE)
-[![Build Status](https://travis-ci.org/icyleaf/fastlane-qyer.svg?branch=master)](https://travis-ci.org/icyleaf/fastlane-qyer)
+[![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://github.com/icyleaf/fastlane-plugins/blob/master/LICENSE)
 
 [fastlane](http://github.com/fastlane/fastlane) 的自定义 action，制定了一些用于公司内部移动开发项目使用到的 `lanes`，同时也有部分 action 重新被定义为了更为通用的 plugin 让更多的人检索和使用。
 
