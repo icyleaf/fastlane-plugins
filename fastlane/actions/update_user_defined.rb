@@ -3,8 +3,8 @@ require 'plist'
 
 module Fastlane
   module Actions
-    ##
-    # UpdateUserDefinedAction
+
+    # WIP
     class UpdateUserDefinedAction < Action
       def self.run(params)
         @project_path = params[:project_path]

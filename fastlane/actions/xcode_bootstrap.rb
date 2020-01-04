@@ -9,6 +9,7 @@ module Fastlane
       XCODE_APP_IDENTIFIER = :XCODE_APP_IDENTIFIER
     end
 
+    # WIP
     class XcodeBootstrapAction < Action
       def self.run(params)
         @project_path = params[:project_path]
