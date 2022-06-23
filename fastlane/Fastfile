@@ -1,0 +1,81 @@
+# 设置 fastlane 最低支持版本
+fastlane_version '2.125.0'
+
+########################################
+# 全局静态变量
+########################################
+
+# 关闭匿名统计上报
+ENV['FASTLANE_OPT_OUT_USAGE'] = '1'.freeze
+
+# 关闭自动检查 fastlane 更新
+ENV['FASTLANE_SKIP_UPDATE_CHECK'] = '1'.freeze
+
+########################################
+# 通用的 lane 任务
+########################################
+
+desc 'Fastlane 报错后通用处理'
+lane :handle_errors do |options|
+  lane = options[:lane]
+  exception = options[:exception]
+
+  clean_build_artifacts
+  UI.error "Error: #{exception.message}"
+  UI.error exception.backtrace.join("\n")
+
+  message = exception.message
+
+  if is_ci?
+    if is_jenkins?
+      reset_git_repo(force: true)
+
+      message = [
+        "【Jenkins - #{ENV['JOB_NAME']}】 构建失败: #{prefix_message}#{message}",
+        '',
+        "分支: #{ENV['GIT_BRANCH']}",
+        "API 环境: #{ENV['APP_API_ENV']}",
+        "错误阶段: #{lane}",
+        "构建地址: #{ENV['BUILD_URL']}consoleFull",
+        '',
+        '如果能把构建地址的具体错误贴出来会更好的指导研发定位打包错误问题，感谢'
+      ]
+    end
+
+    if is_gitlabe_ci?
+      message = [
+        "【Gitlab CI - #{ENV['CI_PROJECT_NAME']}】 构建失败: #{build_error}",
+        '',
+        "分支: #{ENV['CI_BUILD_REF_NAME']}",
+        "API 环境: #{ENV['APP_API_ENV']}",
+        "错误阶段: #{lane}",
+        "构建地址: #{ENV['CI_JOB_URL']}",
+        '',
+        '如果能把构建地址的具体错误贴出来会更好的指导研发定位打包错误问题，感谢'
+      ]
+    end
+  end
+
+  puts message
+end
+
+desc '提前监测依赖服务是否在线'
+lane :precheck_services do |options|
+  if options[:type] == :ios
+    service_health(
+      name: 'Cocoapds CDN 库',
+      url: 'https://cdn.cocoapods.org/all_pods.txt',
+      method: :head
+    )
+  end
+end
+
+desc '是否是 Jenkins CI 环境'
+lane :is_jenkins? do
+  ENV.key?('JENKINS_HOME') || ENV.key?('JENKINS_URL')
+end
+
+desc '是否是 Gitlab CI 环境'
+lane :is_gitlabe_ci? do
+  ENV.key?('GITLAB_CI')
+end

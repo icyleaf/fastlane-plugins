@@ -1,0 +1,25 @@
+########################################
+# Android 平台使用 lane
+########################################
+
+platform :android do
+
+
+  after_all do |_|
+    UI.message 'All done'
+
+    if is_ci?
+      UI.header 'Stored context'
+      Actions.lane_context.each do |key, value|
+        UI.message "#{key}: #{value}"
+      end
+
+      # 还原 git 仓库并保留 app/build 文件夹
+      reset_git_repo(force: true, exclude: ['app/build', 'vendors', 'fastlane'])
+    end
+  end
+
+  error do |lane, exception|
+    handle_errors(lane: lane, exception: exception)
+  end
+end

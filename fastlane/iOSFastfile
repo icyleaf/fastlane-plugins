@@ -1,0 +1,38 @@
+# 设置 xcode 构建获取配置的超时 30 分钟
+ENV['FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT'] = '30'
+
+platform :ios do
+  desc '注册测试设备'
+  desc '注册时必须提供设备名和 UDID'
+  desc "fastlane device name:'name' udid:'udid'"
+  lane :device do |options|
+    name = options[:name]
+    udid = options[:udid]
+
+    UI.user_error!('*NAME* is missing.') if name.to_s.empty?
+    UI.user_error!('*UDID* is missing.') if udid.to_s.empty?
+
+    register_devices(devices: { name => udid })
+  end
+
+  after_all do
+    UI.message 'All done'
+    if is_ci?
+      UI.header 'Stored context'
+      Actions.lane_context.each do |key, value|
+        UI.message "#{key}: #{value}"
+      end
+
+      # 还原 git 仓库并保留 Pods 和 build 文件夹
+      reset_git_repo(force: true, exclude: %w[build Pods vendors fastlane])
+
+      remove_ram_disk if Actions.lane_context[Actions::SharedValues::RAM_DISK_PATH]
+    end
+  end
+
+  error do |lane, exception|
+    remove_ram_disk if is_ci? && Actions.lane_context[Actions::SharedValues::RAM_DISK_PATH]
+    handle_errors(lane: lane, exception: exception)
+  end
+
+end
